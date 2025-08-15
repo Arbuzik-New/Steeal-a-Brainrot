@@ -1,3 +1,24 @@
+local jump = 0
+local uis = game:GetService("UserInputService")
+
+function traverse(instance)
+    for _,child in ipairs(instance:GetChildren()) do
+		if child:IsA("ProximityPrompt") then
+			child.HoldDuration = 0
+			print(child.HoldDuration)
+		end
+        traverse(child)
+    end
+end
+
+uis.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.Space then
+		if jump > 0 then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, jump, 0)
+		end
+    end
+end)
+
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 
 local Window = Library.CreateLib("Steel a Brainrot V1", "DarkTheme")
@@ -53,24 +74,25 @@ MainSection:NewToggle("Self Lock Time", "Showing Self Base Lock Time", function(
 		TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		TextLabel.TextSize = 28.000
 
-		local co = coroutine.create(function()
+		coroutine.wrap(function()
 			while task.wait(0.25) do
-				local plot = nil
+				pcall(function()
+					local plot = nil
 
-				for _,pl in ipairs(game:GetService("Workspace").Plots:GetChildren()) do
-					local text = pl.PlotSign.SurfaceGui.Frame.TextLabel.Text
-					if text:find(game:GetService("Players").LocalPlayer.Name) then
-						plot = pl
-						break
+					for _,pl in ipairs(game:GetService("Workspace").Plots:GetChildren()) do
+						local text = pl.PlotSign.SurfaceGui.Frame.TextLabel.Text
+						if text:find(game:GetService("Players").LocalPlayer.Name) then
+							plot = pl
+							break
+						end
 					end
-				end
 
-				if plot ~= nil then
-					TextLabel.Text = "Lock Time: " .. plot.Purchases.PlotBlock.Main.BillboardGui.RemainingTime.Text
-				end
+					if plot ~= nil then
+						TextLabel.Text = "Lock Time: " .. plot.Purchases.PlotBlock.Main.BillboardGui.RemainingTime.Text
+					end
+				end)
 			end
-		end)
-		coroutine.resume(co)
+		end)()
 	else
 		if game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Lock Time") then
 			game:GetService("Players").LocalPlayer.PlayerGui["Lock Time"]:Destroy()
@@ -80,6 +102,9 @@ MainSection:NewToggle("Self Lock Time", "Showing Self Base Lock Time", function(
 end)
 
 -- MOVE --
+MoveSection:NewSlider("Jump Boost", "MORE!!!", 250, 0, function(value)
+	jump = value
+end)
 
 -- ESP --
 EspSection:NewToggle("Base Esp", "Showing Lock Time Base", function(state)
@@ -121,13 +146,12 @@ EspSection:NewToggle("Base Esp", "Showing Lock Time Base", function(state)
 			TextLabel1.TextStrokeTransparency = 0
 			TextLabel1.TextSize = 24
 			TextLabel1.TextWrapped = true
-			local co = coroutine.create(function()
+			coroutine.wrap(function()
 				while task.wait(0.25) do
 					TextLabel.Text = "Lock Time: " .. plot.Purchases.PlotBlock.Main.BillboardGui.RemainingTime.Text
 					TextLabel1.Text = plot.PlotSign.SurfaceGui.Frame.TextLabel.Text
 				end
-			end)
-			coroutine.resume(co)
+			end)()
 		end
 	else
 		for _,plot in ipairs(game:GetService("Workspace").Plots:GetChildren()) do
